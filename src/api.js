@@ -9,12 +9,21 @@ export const getAll = async () => {
     }
 }
 export const create = async (data) => {
-    console.log(data);
     try {
         const responsePromis = await fetch(url+"create",{
             method: "POST",
             body: JSON.stringify(data),
             headers: { "Content-Type": "application/json" },
+        });
+    } catch (e) {
+        console.log(e.message)
+    }
+}
+export const deleteById = async (id) => {
+    console.log(id);
+    try {
+        await fetch(url+`delete/${id}`,{
+            method: "DELETE"
         });
     } catch (e) {
         console.log(e.message)

@@ -1,6 +1,10 @@
-import { getAll, create } from "./api.js";
+import { getAll, deleteById } from "./api.js";
 
 const todosContainer = document.querySelector("#todos-container");
+const deleteModal = document.querySelector(".delete-modal");
+const deleteModalBtn = document.querySelector(".delete-modal-btn")
+const cancelModalBtn = document.querySelector(".cancel-modal-btn")
+
 const DEFAULT_PAGE_SIZE = 5;
 let items;
 
@@ -31,9 +35,13 @@ function addToDom(todo) {
             </div>
             <p class="dueDate">${todo.dueDate}</p>
           </div>
-          <div class="edit-delete">
-            <i class="fa-solid fa-pen px-2" id="edit">edit</i>
-            <i class="fa-solid fa-trash delete " >delete</i>
+          <div class="d-flex">
+            <div class="edit">
+                <i class="fa-solid fa-pen px-2" id="edit">edit</i>
+            </div>
+            <div class="delete">
+                <i class="fa-solid fa-trash " >delete</i>
+            </div>
           </div>
         </div>
         <p class="description">${todo.description}</p>
@@ -113,6 +121,37 @@ document.querySelector("ul.pagination").addEventListener("click", (e) => {
     getAllTodoes(currentPage);
 });
 
-document.getElementById("edit").addEventListener("click",(e)=>{
-    e.target.classList.add(` data-toggle="modal" data-target="#exampleModal"`)
+// delete item
+console.log(document.getElementsByClassName("delete")[0]);
+todosContainer.addEventListener("click",(e)=>{
+    const id = e.target.closest(".todolist").id
+    if(e.target.closest("div").classList.contains("delete")){
+        const currentPage = window.location.href.split("=")[1];
+        deleteModal.style.display = "flex";
+        deleteModal.id = id;
+        deleteModal.dataset.currentPage = currentPage;
+        console.log("id", deleteModal.id);
+        console.log("currentPage", currentPage);
+    }
+    if(e.target.closest("div").classList.contains("edit")){
+        
+    }
+    
 })
+// click on Yes botton in modal
+deleteModalBtn.addEventListener("click", () => {
+    const modalId = deleteModal.id;
+    const currentPage = deleteModal.dataset.currentPage;
+    deleteTodoById(modalId);
+    getAllTodoes(currentPage);
+    deleteModal.style.display = "none";
+  });
+
+  async function deleteTodoById(id){
+    await deleteById(id)
+  }
+
+//   click on No botton in modal
+cancelModalBtn.addEventListener("click", () => {
+    deleteModal.style.display = "none";
+  });
