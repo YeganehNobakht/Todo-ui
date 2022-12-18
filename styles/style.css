@@ -80,7 +80,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
   }
 
-  .delete-modal{
+  .delete-modal, .edit-modal{
     display: none;
     justify-content: center;
     position: absolute;

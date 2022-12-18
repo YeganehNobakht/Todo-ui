@@ -28,8 +28,8 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Todoes</a></li>
+                        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="todoes.html">Todoes</a></li>
                     </ul>
                 </div>
             </div>
@@ -50,16 +50,16 @@
                             <div class="mb-3">
                                 <label for="title" class="form-label justify-content-start">Title</label>
                                 <input type="text" id="title" class="form-control" required
-                                    pattern="[A-Za-z]{3,30}" placeholder="title...">
+                                    pattern="[A-Za-z0-9 .-_@$&#]{3,30}" placeholder="title...">
                             </div>
                             <div class="mb-3">
                                 <label for="description" class="form-label">Descriptin</label>
                                 <textarea type="tea" id="description" class="form-control" required
-                                    pattern="[A-Za-z]{3,100}" placeholder="description..."></textarea>
+                                    pattern="[A-Za-z0-9 .-_@$&#]{3,100}" placeholder="description..."></textarea>
                             </div>
                             <div class="mb-3">
                                 <label for="dueDate" class="form-label">Due Date</label>
-                                    <input id="dueDate" type="date" class="form-control">
+                                    <input id="dueDate" type="date" class="form-control" required>
                             </div>
                             <div class="col-auto"><button class="btn btn-primary" id="submitButton"
                                     type="submit">Add</button></div>

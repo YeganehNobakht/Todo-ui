@@ -1,9 +1,13 @@
-import { getAll, deleteById } from "./api.js";
+import { getAll, deleteById, editById } from "./api.js";
 
 const todosContainer = document.querySelector("#todos-container");
 const deleteModal = document.querySelector(".delete-modal");
+const editModal = document.querySelector(".edit-modal");
 const deleteModalBtn = document.querySelector(".delete-modal-btn")
+const cancelEditModalBtn = document.querySelector(".cancel-edit-modal-btn")
+const editModalBtn = document.querySelector("#edit-modal-btn")
 const cancelModalBtn = document.querySelector(".cancel-modal-btn")
+const editForm = document.querySelector("#my-edit-form")
 
 const DEFAULT_PAGE_SIZE = 5;
 let items;
@@ -11,19 +15,35 @@ let items;
 const page = pageUrl()
 getAllTodoes(page)
 
-async function getAllTodoes (page)  {
-    
-    items = await getAll()
+async function getAllTodoes(page) {
 
+    items = await getAll()
+console.log(items);
     todosContainer.innerHTML = "";
     let pageItems = frontEndPagination(items, page)
+    console.log(pageItems);
+    if (!pageItems) {
+        console.log("page",page);
+        if(page!=1){
+            page = page - 1;
+            localStorage.setItem("pageNumber", page);
+            pageUrl();
+            pageItems = frontEndPagination(items, page)
+            addAllItemInPageToDom(pageItems)
+        }
+    }else{
+        addAllItemInPageToDom(pageItems)
+    }
+    
+    createPagination(items.length, page)
+
+}
+
+function addAllItemInPageToDom(pageItems){
     pageItems.forEach(todo => {
         if (todo) addToDom(todo);
     })
-    createPagination(items.length, page)
 }
-
-
 function addToDom(todo) {
     const html = `
       <div class="todolist" id="${todo.id}">
@@ -31,7 +51,7 @@ function addToDom(todo) {
           <div class="title-date">
             <div class="todo-title">
                 <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked">
-                <label for="title${todo.id}">${todo.title}</label>
+                <label class="title${todo.id}">${todo.title}</label>
             </div>
             <p class="dueDate">${todo.dueDate}</p>
           </div>
@@ -55,7 +75,7 @@ function addToDom(todo) {
 
 
 
-function historyPushState(pageNumber){
+function historyPushState(pageNumber) {
     if (history.pushState) {
         let newurl =
             window.location.protocol +
@@ -102,7 +122,6 @@ function frontEndPagination(items, page) {
         }
         subItems.push(temp);
     }
-    console.log("sub", page);
     return subItems[page - 1];
 }
 
@@ -115,43 +134,81 @@ document.querySelector("ul.pagination").addEventListener("click", (e) => {
     const lis = document.querySelectorAll(".page-item");
     lis.forEach((li) => li.classList.remove("active"));
     // if (e.composedPath()[0].classList.contains("page-link")) {
-        e.target.closest("li").classList.add("active");
-        historyPushState(e.target.innerHTML)
+    e.target.closest("li").classList.add("active");
+    historyPushState(e.target.innerHTML)
     // }
     getAllTodoes(currentPage);
 });
 
-// delete item
-console.log(document.getElementsByClassName("delete")[0]);
-todosContainer.addEventListener("click",(e)=>{
-    const id = e.target.closest(".todolist").id
-    if(e.target.closest("div").classList.contains("delete")){
-        const currentPage = window.location.href.split("=")[1];
+// decide delete/edit item
+todosContainer.addEventListener("click", (e) => {
+    const todoList = e.target.closest(".todolist")
+    const id = todoList.id
+    const title = todoList.children[0].children[0].children[0].children[1].innerHTML
+    const description = todoList.children[1].innerHTML;
+    const dueDate = todoList.children[0].children[0].children[1].innerHTML
+    const currentPage = window.location.href.split("=")[1];
+    if (e.target.closest("div").classList.contains("delete")) {
         deleteModal.style.display = "flex";
         deleteModal.id = id;
         deleteModal.dataset.currentPage = currentPage;
-        console.log("id", deleteModal.id);
-        console.log("currentPage", currentPage);
     }
-    if(e.target.closest("div").classList.contains("edit")){
-        
+    if (e.target.closest("div").classList.contains("edit")) {
+        editModal.style.display = "flex";
+        editModal.id = id;
+        editModal.dataset.currentPage = currentPage;
+
+        // set default for edit modal
+        editModal.querySelector("#title").value = title;
+        editModal.querySelector("#description").innerHTML = description;
+        editModal.querySelector("#dueDate").defaultValue = dueDate;
     }
-    
+
 })
 // click on Yes botton in modal
-deleteModalBtn.addEventListener("click", () => {
+deleteModalBtn.addEventListener("click", async() => {
     const modalId = deleteModal.id;
     const currentPage = deleteModal.dataset.currentPage;
-    deleteTodoById(modalId);
+    await deleteById(id)
     getAllTodoes(currentPage);
     deleteModal.style.display = "none";
-  });
+});
 
-  async function deleteTodoById(id){
-    await deleteById(id)
-  }
 
-//   click on No botton in modal
+//   click on No botton in delete modal
 cancelModalBtn.addEventListener("click", () => {
     deleteModal.style.display = "none";
-  });
+});
+
+//   edit item
+
+//   click on edit button in edit modal
+editForm.addEventListener("submit", async (e) => {
+    e.preventDefault
+    const modalId = editModal.id;
+    const currentPage = editModal.dataset.currentPage;
+    console.log(modalId);
+    const todo = gatherFormData(e)
+    console.log(todo);
+    const todoWithId = { ...todo, id: modalId }
+    await editById(todoWithId)
+    getAllTodoes(currentPage);
+    editModal.style.display = "none";
+})
+//   click on cancel botton in edit modal
+cancelEditModalBtn.addEventListener("click", () => {
+    editModal.style.display = "none"
+});
+
+
+
+
+function gatherFormData(e) {
+    const { title, description, dueDate } = e.target;
+    return {
+        title: title.value,
+        description: description.value,
+        dueDate: dueDate.value,
+        createdDate: new Date().toLocaleDateString("zh-Hans-CN").replaceAll("/", "-")
+    }
+}

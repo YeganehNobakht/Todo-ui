@@ -4,7 +4,6 @@ const form = document.getElementById("my_form")
 
 // create new todo
 form.onsubmit = (e) => {
-    e.preventDefault();
     const formData = gatherFormData(e)
     create(formData);
 }
